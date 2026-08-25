@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你身上哪件事值錢</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap">
+
+<style>
+  /* 深夜書房：暖燈色落在深墨木色桌面上，單一調性，不設淺色模式 */
+  :root{
+    --ground:#15110D;
+    --surface:#211A14;
+    --surface-2:#2E251C;
+    --ink:#EFE2C9;
+    --ink-soft:#B3A488;
+    --ink-faint:#7C6F59;
+    --brass:#E0A854;
+    --brass-soft:#F0C888;
+    --brass-wash:rgba(224,168,84,.16);
+    --stamp:#C1503A;
+    --stamp-wash:rgba(193,80,58,.16);
+    --line:#3A2F23;
+    --shadow:rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{background:var(--ground);}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1000px 560px at 50% -8%, var(--brass-wash), transparent 62%),
+      var(--ground);
+    color:var(--ink);
+    font-family:"Noto Sans TC","Noto Sans",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"Space Mono",monospace;}
+  h1,h2,h3{font-family:"Noto Serif TC","Noto Serif",serif; text-wrap:balance; margin:0;}
+
+  .stage-wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:28px 18px 80px;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:26px;
+  }
+  .brandmark{
+    font-family:"Noto Serif TC",serif;
+    font-weight:900;
+    font-size:15px;
+    letter-spacing:.06em;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .brandmark span{color:var(--brass);}
+  .stubs{display:flex; gap:5px;}
+  .stub{
+    width:16px; height:22px;
+    border:1.5px solid var(--line);
+    border-radius:2px;
+    background:var(--surface);
+    transition:background .25s, border-color .25s;
+  }
+  .stub.done{background:var(--brass); border-color:var(--brass);}
+  .stub.now{border-color:var(--stamp); border-width:2px;}
+
+  /* ---------- panel ---------- */
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 24px 60px -22px var(--shadow);
+    padding:34px 30px;
+    position:relative;
+  }
+  @media (max-width:560px){ .panel{padding:24px 18px;} }
+
+  .eyebrow{
+    font-family:"Space Mono",monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin-bottom:10px;
+    display:block;
+  }
+  .headline{font-size:clamp(22px,4.6vw,30px); font-weight:800; line-height:1.35;}
+  .lede{color:var(--ink-soft); font-size:15px; line-height:1.75; margin-top:12px; max-width:56ch;}
+  .lede + .lede{margin-top:8px;}
+
+  /* ---------- buttons ---------- */
+  .btnrow{display:flex; justify-content:space-between; align-items:center; margin-top:30px; gap:12px;}
+  .btn{
+    font-family:"Noto Sans TC",sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:13px 26px;
+    border-radius:3px;
+    cursor:pointer;
+    border:1.5px solid var(--brass);
+    background:transparent;
+    color:var(--brass);
+    position:relative;
+    transition:transform .15s ease, background .2s, color .2s, opacity .2s;
+  }
+  .btn::before{
+    content:"";
+    position:absolute; inset:3px;
+    border:1px solid currentColor;
+    border-radius:1px;
+    opacity:.35;
+    pointer-events:none;
+  }
+  .btn.primary{background:var(--brass); color:var(--surface);}
+  .btn:disabled{opacity:.35; cursor:not-allowed;}
+  .btn:not(:disabled):hover{transform:translateY(-1px);}
+  .btn:focus-visible{outline:2px solid var(--stamp); outline-offset:2px;}
+  .btn.ghost{border-color:var(--line); color:var(--ink-soft);}
+  .btn.ghost::before{display:none;}
+
+  .counter{font-family:"Space Mono",monospace; font-size:12.5px; color:var(--ink-faint); font-variant-numeric:tabular-nums;}
+
+  /* ---------- ticket cards ---------- */
+  .deck{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:11px;
+    margin-top:24px;
+  }
+  .ticket{
+    text-align:left;
+    background:var(--surface-2);
+    border:1.5px solid var(--line);
+    border-radius:7px;
+    padding:14px 14px 14px 16px;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink);
+    cursor:pointer;
+    position:relative;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    transition:border-color .15s, background .15s, transform .12s;
+  }
+  .ticket:hover:not(:disabled){transform:translateY(-1px);}
+  .ticket:disabled{opacity:.38; cursor:not-allowed;}
+  .ticket:focus-visible{outline:2px solid var(--stamp); outline-offset:2px;}
+  .ticket .num{
+    font-family:"Space Mono",monospace;
+    font-size:10.5px;
+    color:var(--ink-faint);
+    flex:0 0 auto;
+    padding-top:1px;
+    font-variant-numeric:tabular-nums;
+  }
+  .ticket .txt{flex:1;}
+  .ticket.sel{
+    border-color:var(--brass);
+    background:var(--brass-wash);
+  }
+  .ticket.sel .num{color:var(--brass);}
+  .ticket.sel::after{
+    content:"✓";
+    position:absolute; top:8px; right:10px;
+    color:var(--brass);
+    font-weight:700;
+    font-size:13px;
+  }
+  .ticket.locked{
+    border-color:var(--stamp);
+    border-width:2px;
+    background:var(--stamp-wash);
+  }
+  .ticket.locked::after{
+    content:"已鎖定";
+    position:absolute; top:-9px; right:10px;
+    background:var(--stamp);
+    color:var(--surface);
+    font-family:"Space Mono",monospace;
+    font-size:10px;
+    letter-spacing:.05em;
+    padding:2px 7px;
+    border-radius:2px;
+    transform:rotate(-4deg);
+  }
+
+  /* ---------- round 1: single-card decision flow ---------- */
+  .progline{
+    height:3px;
+    background:var(--line);
+    border-radius:2px;
+    margin-top:18px;
+    overflow:hidden;
+  }
+  .progline > div{
+    height:100%;
+    background:var(--brass);
+    transition:width .25s ease;
+  }
+  @media (prefers-reduced-motion: reduce){ .progline > div{transition:none;} }
+
+  .stack{
+    position:relative;
+    margin:36px auto 10px;
+    max-width:420px;
+    min-height:150px;
+  }
+  .stack .behind{
+    position:absolute; inset:0;
+    background:var(--surface-2);
+    border:1.5px solid var(--line);
+    border-radius:9px;
+  }
+  .stack .behind.b1{transform:rotate(-3deg) translateY(4px);}
+  .stack .behind.b2{transform:rotate(2.5deg) translateY(6px); opacity:.7;}
+  .stack .front{
+    position:relative;
+    background:var(--surface-2);
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    padding:26px 22px;
+    min-height:150px;
+    display:flex;
+    align-items:center;
+    text-align:center;
+  }
+  .stack .front .num{
+    position:absolute; top:12px; left:14px;
+    font-family:"Space Mono",monospace;
+    font-size:10.5px;
+    color:var(--ink-faint);
+  }
+  .stack .front .txt{
+    font-size:17px;
+    line-height:1.55;
+    font-weight:700;
+    width:100%;
+  }
+
+  .swiperow{display:flex; gap:12px; margin-top:22px;}
+  .swiperow .btn{flex:1; text-align:center;}
+
+  /* ---------- persistence & final questions ---------- */
+  .qblock{margin-top:26px;}
+  .qblock:first-child{margin-top:24px;}
+  .qtext{font-weight:700; font-size:15.5px; margin-bottom:12px; line-height:1.5;}
+  .opts{display:flex; flex-wrap:wrap; gap:9px;}
+  .opt{
+    font-family:"Noto Sans TC",sans-serif;
+    font-size:13.5px;
+    padding:9px 16px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:var(--surface-2);
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:border-color .15s, color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--brass-soft);}
+  .opt.sel{border-color:var(--brass); background:var(--brass-wash); color:var(--ink); font-weight:700;}
+  .opt:focus-visible{outline:2px solid var(--stamp); outline-offset:2px;}
+
+  .finalrow{
+    display:flex; align-items:center; gap:12px;
+    width:100%; text-align:left;
+    padding:14px 16px;
+    border:1.5px solid var(--line);
+    border-radius:6px;
+    background:var(--surface-2);
+    color:var(--ink);
+    font-size:14.5px;
+    cursor:pointer;
+    margin-top:9px;
+    transition:border-color .15s, background .15s;
+  }
+  .finalrow .letter{
+    font-family:"Space Mono",monospace;
+    color:var(--brass);
+    font-weight:700;
+    font-size:13px;
+    flex:0 0 auto;
+  }
+  .finalrow.sel{border-color:var(--brass); background:var(--brass-wash);}
+  .finalrow:focus-visible{outline:2px solid var(--stamp); outline-offset:2px;}
+
+  /* ---------- result / certificate ---------- */
+  .cert{position:relative; overflow:hidden;}
+  .seal{
+    position:absolute; top:22px; right:20px;
+    width:74px; height:74px;
+    border:2px solid var(--stamp);
+    border-radius:50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transform:rotate(-9deg);
+    color:var(--stamp);
+    font-family:"Space Mono",monospace;
+    font-size:9px;
+    letter-spacing:.04em;
+    text-align:center;
+    line-height:1.5;
+    opacity:.9;
+  }
+  .seal::before{
+    content:"";
+    position:absolute; inset:5px;
+    border:1px solid var(--stamp);
+    border-radius:50%;
+  }
+  @media (max-width:560px){ .seal{width:58px; height:58px; font-size:7.5px; top:16px; right:14px;} }
+
+  .typebadge{
+    display:inline-block;
+    font-family:"Space Mono",monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    color:var(--stamp);
+    background:var(--stamp-wash);
+    border:1px solid var(--stamp);
+    padding:4px 10px;
+    border-radius:3px;
+    margin-bottom:14px;
+  }
+
+  .gapstats{
+    display:flex; align-items:center; gap:18px;
+    margin:22px 0;
+    padding:18px 20px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+  }
+  .gapstats .stat{text-align:center;}
+  .gapstats .n{
+    font-family:"Space Mono",monospace;
+    font-size:30px; font-weight:700;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink);
+    line-height:1;
+  }
+  .gapstats .lbl{font-size:11.5px; color:var(--ink-faint); margin-top:6px;}
+  .gapstats .arrow{color:var(--brass-soft); font-size:20px;}
+
+  .callout{
+    margin:20px 0;
+    padding:18px 20px;
+    background:var(--brass-wash);
+    border-left:3px solid var(--brass);
+    border-radius:2px;
+  }
+  .callout .k{font-family:"Space Mono",monospace; font-size:10.5px; letter-spacing:.1em; color:var(--brass); text-transform:uppercase; display:block; margin-bottom:7px;}
+  .callout .v{font-size:15.5px; font-weight:700; line-height:1.5;}
+
+  .actline{font-size:14.5px; line-height:1.7; margin:16px 0; color:var(--ink-soft);}
+  .actline b{color:var(--ink);}
+
+  .quote{
+    font-family:"Noto Serif TC",serif;
+    font-style:italic;
+    font-size:16.5px;
+    text-align:center;
+    color:var(--ink);
+    margin:26px auto;
+    max-width:44ch;
+    line-height:1.65;
+    position:relative;
+    padding:0 6px;
+  }
+
+  .divider{height:1px; background:var(--line); margin:26px 0; border:none;}
+
+  .note{
+    padding:14px 16px;
+    border:1px dashed var(--brass-soft);
+    border-radius:6px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.65;
+  }
+
+  .tallyrow{display:flex; align-items:center; gap:12px; margin:6px 0 20px;}
+  .tally{display:flex; gap:3px;}
+  .tick{width:5px; height:20px; background:var(--line); border-radius:1px;}
+  .tick.on{background:var(--brass);}
+  .tallytxt{font-family:"Space Mono",monospace; font-size:12.5px; color:var(--ink-soft); font-variant-numeric:tabular-nums;}
+
+  .catgrid{display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:16px;}
+  @media (max-width:520px){ .catgrid{grid-template-columns:1fr;} }
+  .catcard{
+    padding:14px 15px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+  }
+  .catcard .k{font-family:"Space Mono",monospace; font-size:10px; letter-spacing:.08em; color:var(--ink-faint); text-transform:uppercase; display:block; margin-bottom:6px;}
+  .catcard .v{font-size:14.5px; font-weight:700;}
+
+  .sectiontitle{font-size:18px; font-weight:800; margin:30px 0 4px; font-family:"Noto Serif TC",serif;}
+
+  /* ---------- email capture ---------- */
+  .capture{
+    margin-top:8px;
+    padding:20px 20px 22px;
+    background:var(--surface-2);
+    border:1.5px solid var(--brass-soft);
+    border-radius:8px;
+  }
+  .capform{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+  .emailinput{
+    flex:1 1 220px;
+    min-width:0;
+    font-family:"Noto Sans TC",sans-serif;
+    font-size:14.5px;
+    padding:11px 14px;
+    border:1.5px solid var(--line);
+    border-radius:4px;
+    background:var(--surface);
+    color:var(--ink);
+  }
+  .emailinput::placeholder{color:var(--ink-faint);}
+  .emailinput:focus-visible{outline:2px solid var(--brass); outline-offset:1px;}
+  .capnote{font-size:12.5px; margin-top:10px; line-height:1.6;}
+  .capnote.err{color:var(--stamp);}
+  .capnote.ok{color:var(--brass);}
+
+  .fade-in{animation:fadeIn .38s ease both;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  @media (prefers-reduced-motion: reduce){
+    .fade-in{animation:none;}
+    .btn, .ticket, .opt, .finalrow{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage-wrap">
+  <div class="topbar">
+    <div class="brandmark">鑑定所 <span>· 你身上哪件事值錢</span></div>
+    <div class="stubs" id="stubs"></div>
+  </div>
+  <div class="panel" id="panel"></div>
+</div>
+
+<script>
+(function(){
+  // TODO(Erica): 部署 Apps Script Web App 之後，將這裡換成你的 /exec URL
+  var APP_SCRIPT_URL = "PASTE_YOUR_DEPLOYED_WEB_APP_URL_HERE";
+
+  var CATS = {
+    A:{name:"整理秩序", fast:"代整理服務", digi:"模板／SOP／清單（最容易，最適合先做）"},
+    B:{name:"解讀翻譯", fast:"一對一教學", digi:"懶人包／迷你課"},
+    C:{name:"情緒承接", fast:"一對一諮詢", digi:"陪跑社群（單價高但難規模化）"},
+    D:{name:"品味挑選", fast:"代選服務", digi:"選物清單／推薦名單"},
+    E:{name:"動手做出來", fast:"接案", digi:"成品模板／素材包"},
+    F:{name:"推動督促", fast:"一對一教練", digi:"陪跑營／打卡社群"}
+  };
+
+  var RAW = [
+    ["A","幫人把一堆亂七八糟的資料整理成一份清單"],
+    ["A","把重複要做的事寫成步驟，別人照著也能做"],
+    ["A","幫人排時間表或行程，讓事情不打架"],
+    ["A","把一個大目標拆成一步一步"],
+    ["A","幫人整理房間、衣櫃或空間"],
+    ["A","把帳目或開支理清楚"],
+    ["A","幫一群人分清楚「誰做什麼」"],
+    ["A","把散落的筆記變成查得到的資料"],
+    ["B","把專業術語講成外行聽得懂的話"],
+    ["B","幫人看合約或條款，指出重點"],
+    ["B","把一本書或一堂課濃縮講給人聽"],
+    ["B","幫人比較幾個選項，講清楚差在哪"],
+    ["B","教人用一個工具或軟件"],
+    ["B","幫人看數據或報告，指出關鍵"],
+    ["B","把複雜的流程畫成一張圖"],
+    ["B","幫人準備考試、面試或簡報"],
+    ["C","聽人講完煩惱，對方鬆了一口氣"],
+    ["C","在別人慌的時候把場面穩住"],
+    ["C","幫人在吵架之後把話講開"],
+    ["C","陪人做他自己一個人不敢做的事"],
+    ["C","在別人開口之前就察覺到他不舒服"],
+    ["C","幫人換一個角度看一件他覺得很糟的事"],
+    ["C","照顧生病或不舒服的人"],
+    ["C","讓緊張的人放鬆下來"],
+    ["D","幫人挑禮物"],
+    ["D","幫人選餐廳或安排行程"],
+    ["D","幫人配衣服或決定造型"],
+    ["D","幫人挑產品，而且說得出為什麼"],
+    ["D","幫人挑照片或選圖"],
+    ["D","幫人取名字或想標題"],
+    ["D","幫人直接決定買哪一個，讓他不用再研究"],
+    ["D","找到別人找不到的店、資源或渠道"],
+    ["E","把想法變成一份看得懂的簡報或文件"],
+    ["E","修理或改造東西"],
+    ["E","拍照或剪片"],
+    ["E","做出好吃的東西"],
+    ["E","寫出一段人願意看完的文字"],
+    ["E","設計版面或畫面"],
+    ["E","用工具搭出一個能跑的東西（表格、網站、自動化）"],
+    ["E","做手作或佈置"],
+    ["F","盯著人完成他自己做不到的事"],
+    ["F","把一群人組織起來完成一件事"],
+    ["F","幫人訂出做得到的目標"],
+    ["F","在別人想放棄的時候讓他撐下去"],
+    ["F","帶新人上手"],
+    ["F","主持一場討論，讓結論真的出來"],
+    ["F","幫人談價或爭取條件"],
+    ["F","推動一件卡了很久的事往前"]
+  ];
+
+  var CARDS = RAW.map(function(r,i){ return {id:i+1, cat:r[0], text:r[1]}; });
+  // 打亂順序，讓分類不會被看出來
+  (function shuffle(a){
+    for(var i=a.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+  })(CARDS);
+  var byId = {}; CARDS.forEach(function(c){ byId[c.id]=c; });
+
+  var PQ = [
+    {q:"在沒有報酬、沒有人看的情況下，你做這件事做了多久？", opts:[["沒有過",0],["幾個月",1],["一年以上",2]]},
+    {q:"三年前的你，有沒有也在做或想做這件事？", opts:[["完全沒有",0],["有一點苗頭",1],["一直都在",2]]},
+    {q:"過去 12 個月，你有沒有自己花錢或花時間讓自己在這件事上更好？", opts:[["沒有",0],["一次",1],["不只一次",2]]},
+    {q:"如果未來三年每天都要碰這件事？", opts:[["光想就累",0],["應該還可以",1],["求之不得",2]]}
+  ];
+
+  var FINAL_OPTS = [
+    "我不知道有什麼好講",
+    "我知道講什麼，但不會表達",
+    "我沒時間",
+    "我已經在發了"
+  ];
+  var FINAL_LINES = [
+    "不是你沒有什麼好說，是你還沒拆開那張卡——它本身就能拆出三十條內容。",
+    "表達可以慢慢練，但你已經贏了最難的一步：你已經找到方向。",
+    "時間不是主因，拆解才是。一張卡拆得對，一條內容十五分鐘就能寫出來。",
+    "那麼你缺的不是內容，是把散落的內容重新組合成一個產品。"
+  ];
+
+  var STUB_STAGES = ["r1","r2","r3","r4","persist","final"];
+
+  function freshState(){
+    return {
+      screen:"intro",
+      r1:new Set(), r1Index:0, r2:new Set(), r3:new Set(), r4:null,
+      persist:[null,null,null,null],
+      finalChoice:null,
+      capture:{status:"idle", error:null}
+    };
+  }
+  var state = freshState();
+
+  function pool(ids){ return CARDS.filter(function(c){ return ids.has(c.id); }); }
+
+  function r2Pool(){ return pool(state.r1); }
+  function r3Pool(){ var base = state.r2.size ? state.r2 : state.r1; return pool(base); }
+  function r4Pool(){
+    var base = state.r3.size ? state.r3 : (state.r2.size ? state.r2 : state.r1);
+    return pool(base);
+  }
+
+  function persistScore(){
+    return state.persist.reduce(function(s,v){ return s + (v==null?0:v); },0);
+  }
+
+  function diagnose(){
+    var r2c = state.r2.size, r3c = state.r3.size;
+    if(r3c >= 3) return "signal";
+    if(r2c < 3) return "material";
+    return "hidden";
+  }
+
+  var panel = document.getElementById("panel");
+  var stubsEl = document.getElementById("stubs");
+
+  function renderStubs(){
+    stubsEl.innerHTML = "";
+    var idx = STUB_STAGES.indexOf(state.screen);
+    STUB_STAGES.forEach(function(s,i){
+      var d = document.createElement("div");
+      d.className = "stub" + (i < idx ? " done" : "") + (i === idx ? " now" : "");
+      stubsEl.appendChild(d);
+    });
+  }
+
+  function go(screen){ state.screen = screen; render(); window.scrollTo({top:0, behavior:"smooth"}); }
+
+  function toggle(setObj, id, cap){
+    if(setObj.has(id)){ setObj.delete(id); }
+    else{
+      if(cap && setObj.size >= cap) return;
+      setObj.add(id);
+    }
+    render();
+  }
+
+  function el(tag, cls, html){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(html != null) e.innerHTML = html;
+    return e;
+  }
+
+  function render(){
+    renderStubs();
+    panel.innerHTML = "";
+    panel.classList.remove("fade-in");
+    void panel.offsetWidth;
+    panel.classList.add("fade-in");
+
+    if(state.screen === "intro") return renderIntro();
+    if(state.screen === "r1") return renderR1();
+    if(state.screen === "r2") return renderRound({
+      key:"r2", set:state.r2, cards:r2Pool(), cap:10,
+      eyebrow:"第二輪 · 天賦",
+      title:"選出做起來不費力的。",
+      lede:["從你剛才圈選的卡片中，選出做起來不費力——甚至有些享受的那些。","不是做得最好的，而是做完不覺得累的那些。最多選 10 張。"],
+      canNext:function(){ return true; },
+      counter:function(){ return "已選 " + state.r2.size + " / 10 張"; },
+      next:function(){ go("r3"); }
+    });
+    if(state.screen === "r3") return renderRound({
+      key:"r3", set:state.r3, cards:r3Pool(), cap:null,
+      eyebrow:"第三輪．市場訊號．最重要的一輪",
+      title:"哪些是曾經有人因為這件事感謝過你的？",
+      lede:["在剩下的這些卡片裡，哪些曾經有人因為這件事感謝過你、詢問過你，或說過「你是怎麼做到的」？","沒有也沒關係，照實選擇。"],
+      canNext:function(){ return true; },
+      counter:function(){ return "已選 " + state.r3.size + " 張"; },
+      next:function(){ go("r4"); }
+    });
+    if(state.screen === "r4") return renderLock();
+    if(state.screen === "persist") return renderPersist();
+    if(state.screen === "final") return renderFinal();
+    if(state.screen === "result") return renderResult();
+  }
+
+  function renderIntro(){
+    panel.appendChild(el("span","eyebrow","免費鑑定 · 三分鐘"));
+    panel.appendChild(el("h1","headline","你身上哪件事，其實已經值錢？"));
+    var l1 = el("p","lede","這不是性格測驗，沒有「你是哪一種人」這類結果。你會排列三輪卡片，每一輪收窄一次——最後留下的那張，就是你已經擁有、只是尚未定價的東西。");
+    var l2 = el("p","lede","診斷不是我們判給你的，是你自己排列出來的。這一點比任何計分邏輯都更有說服力。");
+    panel.appendChild(l1); panel.appendChild(l2);
+    var row = el("div","btnrow");
+    var sp = el("span","counter","一張卡一個決定 · 3 輪收窄 · 4 題持續性");
+    var btn = el("button","btn primary","開始鑑定");
+    btn.onclick = function(){ go("r1"); };
+    row.appendChild(sp); row.appendChild(btn);
+    panel.appendChild(row);
+  }
+
+  function renderR1(){
+    if(state.r1Index >= CARDS.length){
+      panel.appendChild(el("span","eyebrow","第一輪 · 完成"));
+      panel.appendChild(el("h2","headline","48 張已全部看完。"));
+      panel.appendChild(el("p","lede","你圈選了 " + state.r1.size + " 張「我做過，或我做得到」的卡。第二輪將從這些卡片中挑選。"));
+      var row0 = el("div","btnrow");
+      row0.appendChild(el("span","counter","已選 " + state.r1.size + " 張"));
+      var btn0 = el("button","btn primary","繼續");
+      btn0.disabled = state.r1.size < 1;
+      btn0.onclick = function(){ go("r2"); };
+      row0.appendChild(btn0);
+      panel.appendChild(row0);
+      return;
+    }
+
+    var c = CARDS[state.r1Index];
+    panel.appendChild(el("span","eyebrow","第一輪 · 能力範圍"));
+    panel.appendChild(el("h2","headline","我做過，或我做得到？"));
+    panel.appendChild(el("p","lede","不用想太久，一張卡一個決定。這一輪不計分。"));
+
+    var prog = el("div","progline");
+    var fill = document.createElement("div");
+    fill.style.width = Math.round(state.r1Index/CARDS.length*100) + "%";
+    prog.appendChild(fill);
+    panel.appendChild(prog);
+
+    var stack = el("div","stack");
+    stack.appendChild(el("div","behind b2"));
+    stack.appendChild(el("div","behind b1"));
+    var front = el("div","front");
+    front.innerHTML = '<span class="num mono">'+String(c.id).padStart(2,"0")+'</span><span class="txt">'+c.text+'</span>';
+    stack.appendChild(front);
+    panel.appendChild(stack);
+
+    function decide(pick){
+      if(pick) state.r1.add(c.id);
+      state.r1Index += 1;
+      render();
+    }
+
+    var sw = el("div","swiperow");
+    var skipBtn = el("button","btn ghost","跳過");
+    skipBtn.onclick = function(){ decide(false); };
+    var pickBtn = el("button","btn primary","✓ 我做得到");
+    pickBtn.onclick = function(){ decide(true); };
+    sw.appendChild(skipBtn); sw.appendChild(pickBtn);
+    panel.appendChild(sw);
+
+    var row = el("div","btnrow");
+    row.appendChild(el("span","counter",(state.r1Index+1)+" / "+CARDS.length+" · 已選 "+state.r1.size+" 張"));
+    panel.appendChild(row);
+  }
+
+  function renderRound(cfg){
+    panel.appendChild(el("span","eyebrow",cfg.eyebrow));
+    panel.appendChild(el("h2","headline",cfg.title));
+    cfg.lede.forEach(function(t){ panel.appendChild(el("p","lede",t)); });
+
+    var deck = el("div","deck");
+    cfg.cards.forEach(function(c){
+      var b = document.createElement("button");
+      var selected = cfg.set.has(c.id);
+      b.className = "ticket" + (selected ? " sel" : "");
+      var full = cfg.cap != null && !selected && cfg.set.size >= cfg.cap;
+      if(full) b.disabled = true;
+      b.innerHTML = '<span class="num mono">'+String(c.id).padStart(2,"0")+'</span><span class="txt">'+c.text+'</span>';
+      b.onclick = function(){ toggle(cfg.set, c.id, cfg.cap); };
+      deck.appendChild(b);
+    });
+    panel.appendChild(deck);
+
+    var row = el("div","btnrow");
+    row.appendChild(el("span","counter",cfg.counter()));
+    var btn = el("button","btn primary","繼續");
+    btn.disabled = !cfg.canNext();
+    btn.onclick = cfg.next;
+    row.appendChild(btn);
+    panel.appendChild(row);
+  }
+
+  function renderLock(){
+    var cards = r4Pool();
+    panel.appendChild(el("span","eyebrow","第四輪 · 鎖定一張"));
+    panel.appendChild(el("h2","headline","哪一張，你最想知道答案？"));
+    panel.appendChild(el("p","lede","接下來的 4 題，只針對這一張。"));
+
+    var deck = el("div","deck");
+    cards.forEach(function(c){
+      var b = document.createElement("button");
+      var locked = state.r4 === c.id;
+      b.className = "ticket" + (locked ? " locked" : "");
+      b.innerHTML = '<span class="num mono">'+String(c.id).padStart(2,"0")+'</span><span class="txt">'+c.text+'</span>';
+      b.onclick = function(){ state.r4 = c.id; render(); };
+      deck.appendChild(b);
+    });
+    panel.appendChild(deck);
+
+    var row = el("div","btnrow");
+    row.appendChild(el("span","counter", state.r4 ? "已鎖定" : "選一張"));
+    var btn = el("button","btn primary","繼續");
+    btn.disabled = !state.r4;
+    btn.onclick = function(){ go("persist"); };
+    row.appendChild(btn);
+    panel.appendChild(row);
+  }
+
+  function renderPersist(){
+    panel.appendChild(el("span","eyebrow","持續性．唯一測不到的事"));
+    panel.appendChild(el("h2","headline","你撐得住嗎？"));
+    panel.appendChild(el("p","lede","天賦與市場已經由第二、三輪測完。剩下這 4 題，只是想知道你撐不撐得住。"));
+
+    PQ.forEach(function(q,qi){
+      var qb = el("div","qblock");
+      qb.appendChild(el("div","qtext",q.q));
+      var opts = el("div","opts");
+      q.opts.forEach(function(o){
+        var b = document.createElement("button");
+        b.className = "opt" + (state.persist[qi]===o[1] ? " sel" : "");
+        b.textContent = o[0];
+        b.onclick = function(){ state.persist[qi] = o[1]; render(); };
+        opts.appendChild(b);
+      });
+      qb.appendChild(opts);
+      panel.appendChild(qb);
+    });
+
+    var row = el("div","btnrow");
+    var answered = state.persist.filter(function(v){ return v!=null; }).length;
+    row.appendChild(el("span","counter","已答 " + answered + " / 4"));
+    var btn = el("button","btn primary","繼續");
+    btn.disabled = answered < 4;
+    btn.onclick = function(){ go("final"); };
+    row.appendChild(btn);
+    panel.appendChild(row);
+  }
+
+  function renderFinal(){
+    panel.appendChild(el("span","eyebrow","最後一題 · 不計分"));
+    panel.appendChild(el("h2","headline","如果要你為這件事連續發 30 天內容，最卡住你的是什麼？"));
+
+    FINAL_OPTS.forEach(function(t,i){
+      var b = document.createElement("button");
+      b.className = "finalrow" + (state.finalChoice===i ? " sel" : "");
+      b.innerHTML = '<span class="letter mono">'+String.fromCharCode(97+i)+'</span><span>'+t+'</span>';
+      b.onclick = function(){ state.finalChoice = i; render(); };
+      panel.appendChild(b);
+    });
+
+    var row = el("div","btnrow");
+    row.appendChild(el("span","counter", state.finalChoice!=null ? "已選" : "選一項"));
+    var btn = el("button","btn primary","出鑑定結果");
+    btn.disabled = state.finalChoice == null;
+    btn.onclick = function(){ go("result"); };
+    row.appendChild(btn);
+    panel.appendChild(row);
+  }
+
+  var TYPE_COPY = {
+    hidden:{
+      badge:"鑑定類型．有東西沒人知道",
+      head:"你不是沒有可以賣的東西，是從來沒有人知道你有。",
+      body:"這個落差不代表你不夠好，代表你一直在私下做，沒有讓人看見。",
+      product:"就是第四輪那張卡。它已經存在，不用再學新東西。",
+      action:"把這件事做一次，公開發布出來，附上「有需要可以找我」。",
+      quote:"「沒有需求」和「需求還沒找到你」，是兩件完全不同的事。"
+    },
+    signal:{
+      badge:"鑑定類型．已經有訊號",
+      head:"你手上不只一件值錢的事，你卡在還沒開價。",
+      body:"已經有人謝過你、問過你——那就是最真實的市場訊號，比任何測驗都準。",
+      product:"第四輪那張卡，原封不動，開一個價。不用加內容，不用做得更完整。",
+      action:"公開標價，收下第一個陌生人的錢。",
+      quote:"專業不是準備好才發生，是收第一次錢之後才開始。"
+    },
+    material:{
+      badge:"鑑定類型．素材還不夠",
+      head:"現在還沒有，這是正常的，也是唯一誠實的答案。",
+      body:"",
+      product:"",
+      action:"從第一輪圈選過的卡片裡挑一張，公開記錄 30 天。不是為了做產品，是為了累積素材。",
+      quote:"方向不是想出來的結論，是做出來的副產品。"
+    }
+  };
+
+  function collectPayload(){
+    var type = diagnose();
+    var lockedCard = byId[state.r4];
+    var cat = CATS[lockedCard.cat];
+    return {
+      lockedCardId: lockedCard.id,
+      lockedCardText: lockedCard.text,
+      category: lockedCard.cat,
+      categoryName: cat.name,
+      fastForm: cat.fast,
+      digiForm: cat.digi,
+      type: type,
+      r1Count: state.r1.size,
+      r2Count: state.r2.size,
+      r3Count: state.r3.size,
+      persistScore: persistScore(),
+      finalChoiceIndex: state.finalChoice,
+      finalChoiceText: FINAL_OPTS[state.finalChoice],
+      submittedAt: new Date().toISOString()
+    };
+  }
+
+  function renderCapture(){
+    var wrap = el("div","capture");
+    wrap.appendChild(el("div","sectiontitle","要完整版 PDF？"));
+    wrap.appendChild(el("p","lede","留下 email，我們會將這份鑑定整理成 PDF 直接寄給你，包含落差數字、第一個產品與 7 天行動。"));
+
+    if(state.capture.status === "sent"){
+      wrap.appendChild(el("div","capnote ok","已經寄出。請檢查你的收件匣（也請留意垃圾郵件）。"));
+      panel.appendChild(wrap);
+      return;
+    }
+
+    var form = el("div","capform");
+    var input = document.createElement("input");
+    input.type = "email";
+    input.className = "emailinput";
+    input.placeholder = "your@email.com";
+    input.disabled = state.capture.status === "sending";
+    var btn = document.createElement("button");
+    btn.className = "btn primary";
+    btn.textContent = state.capture.status === "sending" ? "寄送中…" : "寄給我";
+    btn.disabled = state.capture.status === "sending";
+    btn.onclick = function(){ submitCapture(input.value.trim()); };
+    form.appendChild(input); form.appendChild(btn);
+    wrap.appendChild(form);
+
+    if(state.capture.error){
+      wrap.appendChild(el("div","capnote err",state.capture.error));
+    }
+    panel.appendChild(wrap);
+  }
+
+  function submitCapture(email){
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      state.capture = {status:"idle", error:"email 格式不正確，請再檢查一次。"};
+      render();
+      return;
+    }
+    state.capture = {status:"sending", error:null};
+    render();
+
+    if(APP_SCRIPT_URL.indexOf("PASTE_") === 0){
+      state.capture = {status:"idle", error:"後端尚未接通（開發中）——部署 Apps Script 後，這個按鈕才會真正寄出 email。"};
+      render();
+      return;
+    }
+
+    var payload = collectPayload();
+    payload.email = email;
+
+    fetch(APP_SCRIPT_URL, {
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    }).then(function(res){
+      if(!res.ok) throw new Error("bad status");
+      return res.json();
+    }).then(function(){
+      state.capture = {status:"sent", error:null};
+      render();
+    }).catch(function(){
+      state.capture = {status:"idle", error:"無法寄出，請檢查網路連線，或直接透過 IG DM 聯絡我。"};
+      render();
+    });
+  }
+
+  function renderResult(){
+    var type = diagnose();
+    var copy = TYPE_COPY[type];
+    var lockedCard = byId[state.r4];
+    var cat = CATS[lockedCard.cat];
+    var score = persistScore();
+
+    panel.classList.add("cert");
+    var seal = el("div","seal","已鑑定<br>APPRAISED");
+    panel.appendChild(seal);
+
+    panel.appendChild(el("span","typebadge",copy.badge));
+    panel.appendChild(el("h1","headline",copy.head));
+    if(copy.body) panel.appendChild(el("p","lede",copy.body));
+
+    var gap = el("div","gapstats");
+    gap.innerHTML =
+      '<div class="stat"><div class="n mono">'+state.r2.size+'</div><div class="lbl">第二輪．不費力</div></div>'+
+      '<div class="arrow">→</div>'+
+      '<div class="stat"><div class="n mono">'+state.r3.size+'</div><div class="lbl">第三輪．有人道謝過</div></div>';
+    panel.appendChild(gap);
+
+    if(copy.product){
+      var pcall = el("div","callout");
+      pcall.innerHTML = '<span class="k">你的第一個產品</span><span class="v">'+lockedCard.text+'</span>';
+      panel.appendChild(pcall);
+      var pact = el("p","actline");
+      pact.innerHTML = '<b>7 天內做一件事：</b>'+copy.action;
+      panel.appendChild(pact);
+    } else {
+      var mcall = el("div","callout");
+      mcall.innerHTML = '<span class="k">7 天內做一件事</span><span class="v">'+copy.action+'</span>';
+      panel.appendChild(mcall);
+    }
+
+    panel.appendChild(el("p","quote","「"+copy.quote+"」"));
+
+    // persistence
+    var tallyRow = el("div","tallyrow");
+    var ticks = "";
+    for(var i=0;i<8;i++) ticks += '<div class="tick'+(i<score?" on":"")+'"></div>';
+    tallyRow.innerHTML = '<div class="tally">'+ticks+'</div><div class="tallytxt">撐得住指數 '+score+' / 8</div>';
+    panel.appendChild(tallyRow);
+
+    if(score < 5){
+      panel.appendChild(el("div","note","補充：這件事你做得來、也可能有人買，但你未必撐得過三年。拿它賺現金流，同時測第二張卡——不用把它當終身事業。"));
+    }
+
+    var hr = document.createElement("hr"); hr.className="divider"; panel.appendChild(hr);
+
+    panel.appendChild(el("div","sectiontitle","這張卡，可以怎麼賣"));
+    panel.appendChild(el("p","lede","分類：「"+cat.name+"」——這一格，是整個鑑定感知價值最高的地方。"));
+    var cg = el("div","catgrid");
+    cg.innerHTML =
+      '<div class="catcard"><span class="k">最快變現形態</span><span class="v">'+cat.fast+'</span></div>'+
+      '<div class="catcard"><span class="k">最容易做成數碼產品</span><span class="v">'+cat.digi+'</span></div>';
+    panel.appendChild(cg);
+
+    var hr2 = document.createElement("hr"); hr2.className="divider"; panel.appendChild(hr2);
+
+    panel.appendChild(el("div","sectiontitle","第二道牆"));
+    panel.appendChild(el("p","lede","三型的下一步都是同一件事：讓合適的人知道你有這個東西。這是絕大部分人真正死在的地方——不是不會剪片、不會設計，是發到第三條就沒東西可講。那不是創意問題，是拆解問題。"));
+    panel.appendChild(el("p","actline","<b>你的答案：</b>「"+FINAL_OPTS[state.finalChoice]+"」——"+FINAL_LINES[state.finalChoice]));
+
+    var hr3 = document.createElement("hr"); hr3.className="divider"; panel.appendChild(hr3);
+    renderCapture();
+
+    var row = el("div","btnrow");
+    var btn = el("button","btn ghost","重新鑑定一次");
+    btn.onclick = function(){
+      state = freshState();
+      render();
+    };
+    row.appendChild(el("span","counter",""));
+    row.appendChild(btn);
+    panel.appendChild(row);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
