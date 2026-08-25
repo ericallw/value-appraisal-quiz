@@ -12,8 +12,8 @@
  * 5. ADMIN_EMAIL 已經填咗你個email，「熱門」名單一出現就會寄一封通知畀你自己。
  */
 
-var SHEET_ID = "TODO_填你個Sheet_ID";
-var TEMPLATE_DOC_ID = "TODO_填你個PDF範本Doc_ID";
+var SHEET_ID = "173Wr44n3hPjhie8ZeXSBmRyW9TV0pFZWthHJ6yK0yrk";
+var TEMPLATE_DOC_ID = "1_7U5jubQMFWQL6QHhRmOvU2PuZLcF7REbcdb60-0TXc";
 var ADMIN_EMAIL = "lilokwa122@gmail.com";
 
 var HEADER_ROW = [
