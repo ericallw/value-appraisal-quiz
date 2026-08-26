@@ -117,7 +117,7 @@ function buildPdf(data) {
     "{{digiForm}}": data.digiForm || "",
     "{{r2Count}}": String(data.r2Count),
     "{{r3Count}}": String(data.r3Count),
-    "{{persistScore}}": String(data.persistScore) + " / 8",
+    "{{persistScore}}": String(data.persistScore),
     "{{finalChoiceText}}": data.finalChoiceText || ""
   };
   Object.keys(tags).forEach(function (key) {
@@ -131,27 +131,24 @@ function buildPdf(data) {
 }
 
 function sendResultEmail(email, pdfBlob, data) {
-  MailApp.sendEmail({
-    to: email,
-    subject: "你的鑑定證書：" + (data.lockedCardText || ""),
-    body: "附件是你的完整鑑定分析 PDF。\n\n如果有問題，直接回覆這封 email。",
-    attachments: [pdfBlob.setName("值錢鑑定證書.pdf")]
-  });
+  GmailApp.sendEmail(email, "你的鑑定證書：" + (data.lockedCardText || ""),
+    "附件是你的完整鑑定分析 PDF。\n\n如果有問題，直接回覆這封 email。",
+    {
+      from: ADMIN_EMAIL,
+      attachments: [pdfBlob.setName("值錢鑑定證書.pdf")]
+    });
 }
 
 function notifyHotLead(data) {
-  MailApp.sendEmail({
-    to: ADMIN_EMAIL,
-    subject: "🔥 熱門名單：" + data.email,
-    body:
-      "有一個「已經有訊號」而且撐得住指數高的人剛剛完成鑑定，值得今天就親自跟進。\n\n" +
-      "Email：" + data.email + "\n" +
-      "鎖定卡：" + data.lockedCardText + "\n" +
-      "分類：" + data.categoryName + "\n" +
-      "第二輪／第三輪：" + data.r2Count + " / " + data.r3Count + "\n" +
-      "撐得住指數：" + data.persistScore + " / 8\n" +
-      "最快變現形態：" + data.fastForm
-  });
+  GmailApp.sendEmail(ADMIN_EMAIL, "🔥 熱門名單：" + data.email,
+    "有一個「已經有訊號」而且撐得住指數高的人剛剛完成鑑定，值得今天就親自跟進。\n\n" +
+    "Email：" + data.email + "\n" +
+    "鎖定卡：" + data.lockedCardText + "\n" +
+    "分類：" + data.categoryName + "\n" +
+    "第二輪／第三輪：" + data.r2Count + " / " + data.r3Count + "\n" +
+    "撐得住指數：" + data.persistScore + " / 8\n" +
+    "最快變現形態：" + data.fastForm,
+    { from: ADMIN_EMAIL });
 }
 
 function jsonOut(obj) {
