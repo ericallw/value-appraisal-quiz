@@ -249,6 +249,34 @@
   .swiperow{display:flex; gap:12px; margin-top:22px;}
   .swiperow .btn{flex:1; text-align:center;}
 
+  /* ---------- recap strip (round 4 memory aid) ---------- */
+  .recap{
+    margin-top:20px;
+    padding:14px 16px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:7px;
+  }
+  .recaplabel{
+    font-family:"Space Mono",monospace;
+    font-size:10.5px;
+    letter-spacing:.06em;
+    color:var(--ink-faint);
+    margin-bottom:9px;
+  }
+  .recapchips{display:flex; flex-wrap:wrap; gap:6px;}
+  .recapchip{
+    font-size:12px;
+    line-height:1.4;
+    padding:5px 10px;
+    border-radius:20px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--ink-faint);
+  }
+  .recapchip.kept{color:var(--ink); border-color:var(--brass-soft);}
+  .recapchip.dropped{text-decoration:line-through; opacity:.55;}
+
   /* ---------- persistence & final questions ---------- */
   .qblock{margin-top:26px;}
   .qblock:first-child{margin-top:24px;}
@@ -628,8 +656,8 @@
     if(state.screen === "r3") return renderRound({
       key:"r3", set:state.r3, cards:r3Pool(), cap:null,
       eyebrow:"第三輪．市場訊號．最重要的一輪",
-      title:"哪些是曾經有人因為這件事感謝過你的？",
-      lede:["在剩下的這些卡片裡，哪些曾經有人因為這件事感謝過你、詢問過你，或說過「你是怎麼做到的」？","沒有也沒關係，照實選擇。"],
+      title:"回想真實生活：哪些是真的有人謝過你的？",
+      lede:["不是卡片寫的情境，是你自己的親身經歷——在剩下的卡片裡，哪些是曾經有真實的人，因為這件事對你說過「謝謝你」、問過你「你是怎麼做到的」，或主動來找你幫忙？","沒有也沒關係，照實選擇。"],
       canNext:function(){ return true; },
       counter:function(){ return "已選 " + state.r3.size + " 張"; },
       next:function(){ go("r4"); }
@@ -739,6 +767,19 @@
     panel.appendChild(el("span","eyebrow","第四輪 · 鎖定一張"));
     panel.appendChild(el("h2","headline","哪一張，你最想知道答案？"));
     panel.appendChild(el("p","lede","接下來的 4 題，只針對這一張。"));
+
+    var r2cards = pool(state.r2);
+    if(r2cards.length){
+      var recap = el("div","recap");
+      recap.appendChild(el("div","recaplabel","回顧：你在第二輪選的 " + r2cards.length + " 張"));
+      var chips = el("div","recapchips");
+      r2cards.forEach(function(c){
+        var mark = state.r3.size ? (state.r3.has(c.id) ? " kept" : " dropped") : "";
+        chips.appendChild(el("span","recapchip"+mark, c.text));
+      });
+      recap.appendChild(chips);
+      panel.appendChild(recap);
+    }
 
     var deck = el("div","deck");
     cards.forEach(function(c){
