@@ -1,15 +1,11 @@
 /**
- * 值錢鑑定卡 — 後端草稿（未部署，未接通任何真實 Sheet/Doc）
+ * 值錢鑑定卡 — 後端（已部署 v5+）
  *
- * 落手用之前要做：
- * 1. 開一個新 Google Sheet，複製佢個 ID 填入 SHEET_ID，第一分頁加返 HEADER_ROW 嗰行做標題。
- * 2. 開一個新 Google Doc 做 PDF 範本，內文用 {{headline}} {{product}} {{action}} {{quote}}
- *    {{categoryName}} {{fastForm}} {{digiForm}} {{r2Count}} {{r3Count}} {{persistScore}} 呢啲
- *    佔位字（同下面 TEMPLATE_TAGS 對照），複製個 Doc ID 填入 TEMPLATE_DOC_ID。
- * 3. clasp push 之後，Deploy → New deployment → Web app，Execute as "Me"，
- *    Who has access "Anyone" —— 攞到嗰條 /exec URL 填返去前端 index.html 嘅 APP_SCRIPT_URL。
- * 4. 前端個 fetch 用 text/plain 避開 CORS preflight，所以呢度用 e.postData.contents 解析。
- * 5. ADMIN_EMAIL 已經填咗你個email，「熱門」名單一出現就會寄一封通知畀你自己。
+ * PDF 排版全部由 buildPdf() 程式生成（顏色跟返網頁「檸檬與亞麻」品牌色），
+ * TEMPLATE_DOC_ID 指嘅 Google Doc 只係一個乾淨容器，內文會每次被清空重寫——
+ * 唔使再喺個 Doc 度手動貼字/調格式，想改設計就直接改 pdfBox/pdfStatRow 呢幾個函數。
+ * SHEET_ID／TEMPLATE_DOC_ID 已經填好，ADMIN_EMAIL 已經填咗 lilokwa122@gmail.com。
+ * 前端個 fetch 用 text/plain 避開 CORS preflight，所以呢度用 e.postData.contents 解析。
  */
 
 var SHEET_ID = "173Wr44n3hPjhie8ZeXSBmRyW9TV0pFZWthHJ6yK0yrk";
@@ -54,6 +50,15 @@ function doGet(e) {
   return ContentService.createTextOutput("OK — 值錢鑑定卡後端運行緊");
 }
 
+// 喺 editor 揀呢個函數撳「執行」——逐個直接掂一掂 Sheet/Drive/Docs/Gmail，
+// 逼 Apps Script 一次過問晒所有授權（唔會真係改動任何嘢）。
+function grantAccess() {
+  SpreadsheetApp.openById(SHEET_ID).getName();
+  DriveApp.getFileById(TEMPLATE_DOC_ID).getName();
+  DocumentApp.openById(TEMPLATE_DOC_ID).getName();
+  GmailApp.getAliases();
+}
+
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
@@ -78,12 +83,14 @@ function doPost(e) {
   }
 }
 
+// 同一個 email 只保留一行——搵到就更新嗰行，搵唔到先 append 新行。
+// 呢個防埋因為網絡重試/手快撳兩下而出現嘅重複行。
 function appendRow(data, tier) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(HEADER_ROW);
   }
-  sheet.appendRow([
+  var row = [
     data.submittedAt || new Date().toISOString(),
     data.email,
     data.lockedCardText,
@@ -98,36 +105,180 @@ function appendRow(data, tier) {
     data.finalChoiceText,
     data.fastForm,
     data.digiForm
-  ]);
+  ];
+
+  var existingRowNum = findRowByEmail(sheet, data.email);
+  if (existingRowNum) {
+    sheet.getRange(existingRowNum, 1, 1, row.length).setValues([row]);
+  } else {
+    sheet.appendRow(row);
+  }
 }
 
+function findRowByEmail(sheet, email) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return null;
+  var emails = sheet.getRange(2, 2, lastRow - 1, 1).getValues();
+  for (var i = 0; i < emails.length; i++) {
+    if (emails[i][0] === email) return i + 2;
+  }
+  return null;
+}
+
+// 顏色跟返網頁「檸檬與亞麻」品牌色
+var PDF_INK = "#3A4420";
+var PDF_INK_SOFT = "#5C6A3D";
+var PDF_BRASS = "#8F6416";
+var PDF_LINE = "#D9C9A0";
+var PDF_LINEN = "#F3ECDA";
+
 function buildPdf(data) {
+  // 範本 Doc 淨係用嚟做一個乾淨嘅容器，實際排版全部由程式生成，
+  // 唔使再靠人手喺 Doc 度貼字/調格式——每次都自動保持同一套設計。
   var templateFile = DriveApp.getFileById(TEMPLATE_DOC_ID);
   var copy = templateFile.makeCopy("值錢鑑定證書 - " + data.email);
   var doc = DocumentApp.openById(copy.getId());
   var body = doc.getBody();
 
-  var tags = {
-    "{{headline}}": TYPE_HEAD[data.type] || "",
-    "{{product}}": data.lockedCardText || "",
-    "{{action}}": TYPE_ACTION[data.type] || "",
-    "{{quote}}": TYPE_QUOTE[data.type] || "",
-    "{{categoryName}}": data.categoryName || "",
-    "{{fastForm}}": data.fastForm || "",
-    "{{digiForm}}": data.digiForm || "",
-    "{{r2Count}}": String(data.r2Count),
-    "{{r3Count}}": String(data.r3Count),
-    "{{persistScore}}": String(data.persistScore),
-    "{{finalChoiceText}}": data.finalChoiceText || ""
-  };
-  Object.keys(tags).forEach(function (key) {
-    body.replaceText(key.replace(/[{}]/g, "\\$&"), tags[key]);
+  // 清空範本原有內容（Body.clear() 會自動保留一個空段落，符合 Docs 嘅結構要求）
+  body.clear();
+
+  body.setMarginTop(38).setMarginBottom(38).setMarginLeft(56).setMarginRight(56);
+
+  pdfPara(body.getChild(0).asParagraph(), "鑑 定 所 · 免 費 鑑 定", {
+    align: DocumentApp.HorizontalAlignment.CENTER, size: 9, bold: true,
+    color: PDF_BRASS, family: "Courier New", spaceAfter: 5
+  });
+
+  pdfAppend(body, "你身上哪件事值錢", {
+    align: DocumentApp.HorizontalAlignment.CENTER, size: 22, bold: true,
+    color: PDF_INK, family: "Georgia", spaceAfter: 2
+  });
+  pdfAppend(body, "鑑 定 證 書", {
+    align: DocumentApp.HorizontalAlignment.CENTER, size: 11, italic: true,
+    color: PDF_BRASS, family: "Georgia", spaceAfter: 12
+  });
+
+  body.appendHorizontalRule();
+
+  pdfAppend(body, pdfTypeBadge(data.type), {
+    size: 9, bold: true, color: PDF_BRASS, family: "Courier New",
+    spaceBefore: 12, spaceAfter: 5
+  });
+  pdfAppend(body, TYPE_HEAD[data.type] || "", {
+    size: 15.5, bold: true, color: PDF_INK, family: "Georgia", spaceAfter: 10
+  });
+
+  if (data.type !== "material" && data.lockedCardText) {
+    pdfBox(body, "你的第一個產品", data.lockedCardText);
+  }
+  pdfBox(body, "7 天內做一件事", TYPE_ACTION[data.type] || "");
+
+  pdfAppend(body, "「" + (TYPE_QUOTE[data.type] || "") + "」", {
+    align: DocumentApp.HorizontalAlignment.CENTER, size: 12, italic: true,
+    color: PDF_INK, family: "Georgia", spaceBefore: 6, spaceAfter: 10
+  });
+
+  body.appendHorizontalRule();
+
+  pdfStatRow(body, [
+    ["第二輪．不費力", String(data.r2Count)],
+    ["第三輪．有人道謝過", String(data.r3Count)],
+    ["撐得住指數", data.persistScore + " / 8"]
+  ]);
+
+  pdfAppend(body, "這張卡，可以怎麼賣", {
+    size: 13, bold: true, color: PDF_INK, family: "Georgia",
+    spaceBefore: 12, spaceAfter: 2
+  });
+  pdfAppend(body, "分類：" + (data.categoryName || ""), {
+    size: 10.5, color: PDF_INK_SOFT, spaceAfter: 6
+  });
+  pdfStatRow(body, [
+    ["最快變現形態", data.fastForm || ""],
+    ["最容易做成數碼產品", data.digiForm || ""]
+  ]);
+
+  pdfAppend(body, "你的答案", {
+    size: 10, bold: true, color: PDF_BRASS, family: "Courier New",
+    spaceBefore: 12, spaceAfter: 4
+  });
+  pdfAppend(body, data.finalChoiceText || "", {
+    size: 12, color: PDF_INK, spaceAfter: 14
+  });
+
+  body.appendHorizontalRule();
+  pdfAppend(body, "值錢鑑定所 · 你身上哪件事值錢", {
+    align: DocumentApp.HorizontalAlignment.CENTER, size: 8.5,
+    color: PDF_INK_SOFT, family: "Courier New", spaceBefore: 8
   });
 
   doc.saveAndClose();
   var pdfBlob = DriveApp.getFileById(copy.getId()).getAs("application/pdf");
   DriveApp.getFileById(copy.getId()).setTrashed(true); // 清走臨時副本，PDF已經攞埋做blob
   return pdfBlob;
+}
+
+function pdfTypeBadge(type) {
+  if (type === "signal") return "鑑定類型．已經有訊號";
+  if (type === "hidden") return "鑑定類型．有東西沒人知道";
+  return "鑑定類型．素材還不夠";
+}
+
+// 幫段落套用字體/顏色/對齊/前後留白
+function pdfPara(p, text, opt) {
+  if (text != null) p.setText(text);
+  p.setFontFamily(opt.family || "Georgia");
+  p.setFontSize(opt.size || 11);
+  p.setBold(!!opt.bold);
+  p.setItalic(!!opt.italic);
+  p.setForegroundColor(opt.color || PDF_INK);
+  if (opt.align) p.setAlignment(opt.align);
+  p.setSpacingBefore(opt.spaceBefore || 0);
+  p.setSpacingAfter(opt.spaceAfter || 0);
+  return p;
+}
+
+function pdfAppend(body, text, opt) {
+  return pdfPara(body.appendParagraph(text), null, opt);
+}
+
+// 淺亞麻底色嘅重點方塊，畀「你的第一個產品」/「7 天內做一件事」用
+function pdfBox(body, label, value) {
+  var table = body.appendTable([[" "]]);
+  table.setBorderWidth(0);
+  var cell = table.getCell(0, 0);
+  cell.setBackgroundColor(PDF_LINEN);
+  cell.setPaddingTop(9).setPaddingBottom(9).setPaddingLeft(16).setPaddingRight(16);
+  pdfPara(cell.getChild(0).asParagraph(), label, {
+    size: 9, bold: true, color: PDF_BRASS, family: "Courier New", spaceAfter: 3
+  });
+  var valuePara = cell.appendParagraph(value);
+  pdfPara(valuePara, null, { size: 13, bold: true, color: PDF_INK });
+
+  var spacer = body.appendParagraph(" ");
+  spacer.setSpacingAfter(8);
+  return table;
+}
+
+// 多欄統計列，用嚟顯示落差數字/變現形態
+function pdfStatRow(body, pairs) {
+  var cells = pairs.map(function () { return " "; });
+  var table = body.appendTable([cells]);
+  table.setBorderWidth(0.5);
+  table.setBorderColor(PDF_LINE);
+  for (var i = 0; i < pairs.length; i++) {
+    var cell = table.getCell(0, i);
+    cell.setPaddingTop(10).setPaddingBottom(10).setPaddingLeft(12).setPaddingRight(12);
+    pdfPara(cell.getChild(0).asParagraph(), pairs[i][0], {
+      size: 8.5, bold: true, color: PDF_BRASS, family: "Courier New", spaceAfter: 4
+    });
+    var v = cell.appendParagraph(pairs[i][1]);
+    pdfPara(v, null, { size: 12, bold: true, color: PDF_INK });
+  }
+  var p = body.appendParagraph(" ");
+  p.setSpacingAfter(6);
+  return table;
 }
 
 function sendResultEmail(email, pdfBlob, data) {
