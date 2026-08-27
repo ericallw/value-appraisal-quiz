@@ -35,12 +35,31 @@ var TYPE_QUOTE = {
 };
 
 // 現在就能做的一步——PDF專屬內容，免費、簡單、今天就做得到。
+// 每一句都係一個最低成本嘅 MVP 測試：唔係「發內容」，係換一句真實市場反饋。
+// signal 型市場需求已經有訊號，測嘅係「肯唔肯畀錢」；hidden／material 型測嘅係「有冇需求」。
+// 再按撐得住指數（熱愛嘅代理指標）分 high／low 兩種語氣——low 嗰句刻意留返後路，
+// 建議同時試第二輪揀過嘅另一張卡，唔逼佢一頭裁落一件佢未必真心鍾意嘅事。
 // 更深嘅內容生產／漏斗設計留返做未來付費內容，唔喺呢度畀晒。
 var IMMEDIATE_ACTION = {
-  signal: "傳一則訊息給最近一個問過你這件事的人：告訴他你現在可以幫他，附上一個價。",
-  hidden: "在限時動態用一句話說你會做這件事——不用多，一句就好。",
-  material: "把這件事做一次，拍下或寫下那個過程——不用想怎麼發，先做這一次就好。"
+  signal: {
+    high: "已經有人問過你。回去問那個人一句：「如果收費 [你的價]，你會不會要？」——這句話本身就是你的 MVP，不用等有完整方案。",
+    low: "先接一單就好，不用想是不是要做一世。用實際成交測試市場：有沒有人真的願意付錢。同時抽時間試試第二輪選過的另一張卡，看哪一張你更投入。"
+  },
+  hidden: {
+    high: "免費幫一個人做一次，換一句真實反饋：「這個你會花錢請人做嗎？」——這句話比任何猜測都準。",
+    low: "免費幫一個人做一次就好，不用想長期做內容。單純想知道：對方會不會主動問「這個要收費嗎」？如果沒有，就是時候試試另一張卡。"
+  },
+  material: {
+    high: "免費幫一個人做這件事一次，記下他的反應——這是你最低成本的市場測試，比空想有沒有人要準得多。",
+    low: "做這件事一次就好，記下自己的感受。如果做完沒什麼感覺，不用勉強——去試試第二輪選過的另一張卡。"
+  }
 };
+
+function immediateActionFor(type, persistScore) {
+  var tier = persistScore >= 5 ? "high" : "low";
+  var byType = IMMEDIATE_ACTION[type] || IMMEDIATE_ACTION.hidden;
+  return byType[tier];
+}
 
 /**
  * 熱度分級 —— 用「鑑定類型」+「撐得住指數」判斷呢個人幾接近會畀錢：
@@ -226,10 +245,10 @@ function buildPdf(data) {
   pdfAppend(body, "現在就能做的一步", {
     size: 16, bold: true, color: PDF_INK, family: "Georgia", spaceAfter: 4
   });
-  pdfAppend(body, "不用等到「準備好」，也不用先想清楚整套計畫——今天就做這一件事。", {
+  pdfAppend(body, "你擅長的東西，要有市場需要，才算真正值錢——但市場需要不是用想的，是用最低成本測一次就知道。以下這一步，就是你的 MVP 測試。", {
     size: 10.5, color: PDF_INK_SOFT, spaceAfter: 10
   });
-  pdfBox(body, "今天", IMMEDIATE_ACTION[data.type] || "");
+  pdfBox(body, "今天", immediateActionFor(data.type, data.persistScore));
 
   body.appendHorizontalRule();
   pdfAppend(body, "這張卡只是第一步。夢想人生研究所會陸續推出更多工具，幫你一步步研究出自己的方向。", {
