@@ -34,16 +34,6 @@ var TYPE_QUOTE = {
   material: "方向不是想出來的結論，是做出來的副產品。"
 };
 
-// 六大分類完整對照——PDF專屬內容，網頁上完全冇（網頁只顯示用戶自己嗰個分類）
-var CATS = {
-  A: { name: "整理秩序", fast: "代整理服務", digi: "模板／SOP／清單（最容易，最適合先做）" },
-  B: { name: "解讀翻譯", fast: "一對一教學", digi: "懶人包／迷你課" },
-  C: { name: "情緒承接", fast: "一對一諮詢", digi: "陪跑社群（單價高但難規模化）" },
-  D: { name: "品味挑選", fast: "代選服務", digi: "選物清單／推薦名單" },
-  E: { name: "動手做出來", fast: "接案", digi: "成品模板／素材包" },
-  F: { name: "推動督促", fast: "一對一教練", digi: "陪跑營／打卡社群" }
-};
-
 // 七天行動清單——PDF專屬內容，網頁上完全冇（網頁只有一句「7天內做一件事」）
 var WEEKLY_PLAN = {
   signal: [
@@ -248,35 +238,24 @@ function buildPdf(data) {
     size: 12, color: PDF_INK, spaceAfter: 14
   });
 
-  // ---- 以下兩節係PDF專屬加碼內容，網頁結果頁完全冇 ----
-  body.appendPageBreak();
+  // ---- 以下一節係PDF專屬加碼內容，網頁結果頁完全冇；唔強行分頁，跟返實際內容自然接落去 ----
+  body.appendHorizontalRule();
 
   pdfAppend(body, "PDF 專屬加碼", {
-    align: DocumentApp.HorizontalAlignment.CENTER, size: 9, bold: true,
-    color: PDF_BRASS, family: "Courier New", spaceAfter: 16
+    size: 9, bold: true, color: PDF_BRASS, family: "Courier New",
+    spaceBefore: 12, spaceAfter: 10
   });
 
   pdfAppend(body, "你的七天行動清單", {
     size: 16, bold: true, color: PDF_INK, family: "Georgia", spaceAfter: 4
   });
-  pdfAppend(body, "「" + (TYPE_ACTION[data.type] || "") + "」只是起點，這是把它拆開之後的七天。", {
+  pdfAppend(body, "「" + (TYPE_ACTION[data.type] || "") + "」不是一步就跨得到的——這是通往它的七天路徑。", {
     size: 10.5, color: PDF_INK_SOFT, spaceAfter: 12
   });
   pdfDayList(body, data.type);
 
   var afterListSpacer = body.appendParagraph(" ");
-  afterListSpacer.setSpacingAfter(20);
-
-  body.appendHorizontalRule();
-
-  pdfAppend(body, "六大分類完整對照", {
-    size: 16, bold: true, color: PDF_INK, family: "Georgia",
-    spaceBefore: 16, spaceAfter: 4
-  });
-  pdfAppend(body, "你落在「" + (data.categoryName || "") + "」——這裡是全部六種類型的變現對照，看看其他類型都在怎麼賣。", {
-    size: 10.5, color: PDF_INK_SOFT, spaceAfter: 12
-  });
-  pdfCompareTable(body, data.category);
+  afterListSpacer.setSpacingAfter(10);
 
   body.appendHorizontalRule();
   pdfAppend(body, "值錢鑑定所 · 你身上哪件事值錢", {
@@ -363,40 +342,6 @@ function pdfDayList(body, type) {
     li.setForegroundColor(PDF_INK);
     li.setSpacingAfter(6);
   });
-}
-
-// 六大分類完整對照表，用戶自己嗰行會用亞麻底色標出嚟
-function pdfCompareTable(body, myCategory) {
-  var order = ["A", "B", "C", "D", "E", "F"];
-  var rows = [["分類", "最快變現形態", "最容易做成數碼產品"]];
-  order.forEach(function (key) {
-    var c = CATS[key];
-    rows.push([c.name, c.fast, c.digi]);
-  });
-
-  var table = body.appendTable(rows);
-  table.setBorderWidth(0.5);
-  table.setBorderColor(PDF_LINE);
-
-  for (var r = 0; r < table.getNumRows(); r++) {
-    var isHeader = r === 0;
-    var isMine = !isHeader && order[r - 1] === myCategory;
-    for (var c2 = 0; c2 < table.getRow(r).getNumCells(); c2++) {
-      var cell = table.getCell(r, c2);
-      cell.setPaddingTop(7).setPaddingBottom(7).setPaddingLeft(10).setPaddingRight(10);
-      if (isMine) cell.setBackgroundColor(PDF_LINEN);
-      var para = cell.getChild(0).asParagraph();
-      pdfPara(para, null, {
-        size: isHeader ? 8.5 : 10,
-        bold: isHeader || isMine || c2 === 0,
-        color: isHeader ? PDF_BRASS : PDF_INK,
-        family: isHeader ? "Courier New" : "Georgia"
-      });
-    }
-  }
-  var p = body.appendParagraph(" ");
-  p.setSpacingAfter(6);
-  return table;
 }
 
 function sendResultEmail(email, pdfBlob, data) {
