@@ -136,7 +136,7 @@ function findRowByEmail(sheet, email) {
 // 顏色跟返網頁「檸檬與亞麻」品牌色
 var PDF_INK = "#3A4420";
 var PDF_INK_SOFT = "#5C6A3D";
-var PDF_BRASS = "#8F6416";
+var PDF_BRASS = "#93691D";
 var PDF_LINE = "#D9C9A0";
 var PDF_LINEN = "#F3ECDA";
 
@@ -230,10 +230,6 @@ function buildPdf(data) {
     size: 10.5, color: PDF_INK_SOFT, spaceAfter: 10
   });
   pdfBox(body, "今天", IMMEDIATE_ACTION[data.type] || "");
-
-  pdfAppend(body, "這一步之後，是把它變成持續的內容、完整的銷售漏斗——這部分需要更系統化的協助，屬於夢想人生研究所之後會推出的內容。", {
-    size: 10, color: PDF_INK_SOFT, spaceBefore: 8, spaceAfter: 10
-  });
 
   body.appendHorizontalRule();
   pdfAppend(body, "這張卡只是第一步。夢想人生研究所會陸續推出更多工具，幫你一步步研究出自己的方向。", {
