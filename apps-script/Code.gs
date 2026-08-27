@@ -176,7 +176,7 @@ function buildPdf(data) {
 
   body.setMarginTop(38).setMarginBottom(38).setMarginLeft(56).setMarginRight(56);
 
-  pdfPara(body.getChild(0).asParagraph(), "鑑 定 所 · 免 費 鑑 定", {
+  pdfPara(body.getChild(0).asParagraph(), "夢 想 人 生 研 究 所 · 免 費 鑑 定", {
     align: DocumentApp.HorizontalAlignment.CENTER, size: 9, bold: true,
     color: PDF_BRASS, family: "Courier New", spaceAfter: 5
   });
@@ -258,7 +258,7 @@ function buildPdf(data) {
   afterListSpacer.setSpacingAfter(10);
 
   body.appendHorizontalRule();
-  pdfAppend(body, "值錢鑑定所 · 你身上哪件事值錢", {
+  pdfAppend(body, "夢想人生研究所 · 你身上哪件事值錢", {
     align: DocumentApp.HorizontalAlignment.CENTER, size: 8.5,
     color: PDF_INK_SOFT, family: "Courier New", spaceBefore: 8
   });

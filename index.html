@@ -61,7 +61,11 @@
     white-space:nowrap;
   }
   .brandmark span{color:var(--brass);}
-  .stubs{display:flex; gap:5px;}
+  @media (max-width:480px){
+    .brandmark{font-size:13px;}
+    .brandmark span{display:none;}
+  }
+  .stubs{display:flex; gap:5px; flex:0 0 auto;}
   .stub{
     width:16px; height:22px;
     border:1.5px solid var(--line);
@@ -109,6 +113,7 @@
     background:transparent;
     color:var(--brass);
     position:relative;
+    white-space:nowrap;
     transition:transform .15s ease, background .2s, color .2s, opacity .2s;
   }
   .btn::before{
@@ -471,7 +476,7 @@
 
 <div class="stage-wrap">
   <div class="topbar">
-    <div class="brandmark">鑑定所 <span>· 你身上哪件事值錢</span></div>
+    <div class="brandmark">夢想人生研究所 <span>· 你身上哪件事值錢</span></div>
     <div class="stubs" id="stubs"></div>
   </div>
   <div class="panel" id="panel"></div>
