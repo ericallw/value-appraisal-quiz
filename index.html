@@ -678,7 +678,8 @@
     panel.appendChild(el("h1","headline","你身上哪件事，其實已經值錢？"));
     var l1 = el("p","lede","這不是性格測驗，沒有「你是哪一種人」這類結果。你會排列三輪卡片，每一輪收窄一次——最後留下的那張，就是你已經擁有、只是尚未定價的東西。");
     var l2 = el("p","lede","診斷不是我們判給你的，是你自己排列出來的。這一點比任何計分邏輯都更有說服力。");
-    panel.appendChild(l1); panel.appendChild(l2);
+    var l3 = el("p","lede","這是夢想人生研究所的第一個工具——研究自己的方向，就從搞清楚你身上已經值錢的東西開始。");
+    panel.appendChild(l1); panel.appendChild(l2); panel.appendChild(l3);
     var row = el("div","btnrow");
     var sp = el("span","counter","一張卡一個決定 · 3 輪收窄 · 4 題持續性");
     var btn = el("button","btn primary","開始鑑定");
@@ -1034,6 +1035,7 @@
     panel.appendChild(el("div","sectiontitle","第二道牆"));
     panel.appendChild(el("p","lede","三型的下一步都是同一件事：讓合適的人知道你有這個東西。這是絕大部分人真正死在的地方——不是不會剪片、不會設計，是發到第三條就沒東西可講。那不是創意問題，是拆解問題。"));
     panel.appendChild(el("p","actline","<b>你的答案：</b>「"+FINAL_OPTS[state.finalChoice]+"」——"+FINAL_LINES[state.finalChoice]));
+    panel.appendChild(el("p","lede","這張卡只是第一步——夢想人生研究所接下來會陸續推出更多工具，幫你一步步研究出自己的方向。"));
 
     var hr3 = document.createElement("hr"); hr3.className="divider"; panel.appendChild(hr3);
     renderCapture();
