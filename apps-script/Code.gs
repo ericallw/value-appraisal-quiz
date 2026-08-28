@@ -55,6 +55,22 @@ var IMMEDIATE_ACTION = {
   }
 };
 
+// 落差說明 —— 用佢自己第二／三輪嘅實際張數講返個診斷，
+// 重點係令佢知道呢個結論係佢自己做出嚟，唔係我哋判畀佢。
+function gapTextFor(data) {
+  var r2 = data.r2Count, r3 = data.r3Count;
+  if (data.type === "signal") {
+    return "你圈了 " + r2 + " 張「做起來不費力」，其中 " + r3 +
+      " 張是別人謝過你、問過你的。那不是客氣，那是最真實的市場訊號，比任何測驗都準——你缺的不是能力證明，是一個價錢。";
+  }
+  if (data.type === "material") {
+    return "你圈到「做起來不費力」的只有 " + r2 +
+      " 張，代表可用的素材還在累積階段。這不是判你出局，是告訴你：現在該做的是累積，不是包裝。";
+  }
+  return "你圈了 " + r2 + " 張「做起來不費力」，但只有 " + r3 +
+    " 張是別人謝過你的。這個落差不代表你不夠好，代表你一直在私下做，沒有讓人看見。";
+}
+
 function immediateActionFor(type, persistScore) {
   var tier = persistScore >= 5 ? "high" : "low";
   var byType = IMMEDIATE_ACTION[type] || IMMEDIATE_ACTION.hidden;
@@ -193,7 +209,10 @@ function buildPdf(data) {
     spaceBefore: 12, spaceAfter: 5
   });
   pdfAppend(body, TYPE_HEAD[data.type] || "", {
-    size: 15.5, bold: true, color: PDF_INK, family: "Georgia", spaceAfter: 10
+    size: 15.5, bold: true, color: PDF_INK, family: "Georgia", spaceAfter: 6
+  });
+  pdfAppend(body, gapTextFor(data), {
+    size: 10.5, color: PDF_INK_SOFT, spaceAfter: 10
   });
 
   if (data.type !== "material" && data.lockedCardText) {
@@ -249,6 +268,22 @@ function buildPdf(data) {
     size: 10.5, color: PDF_INK_SOFT, spaceAfter: 10
   });
   pdfBox(body, "今天", immediateActionFor(data.type, data.persistScore));
+
+  // ---- 第二道牆：三型共用。只講出面前嗰道牆，唔准承諾任何未有嘅產品／方法 ----
+  pdfAppend(body, "接下來那道牆", {
+    size: 16, bold: true, color: PDF_INK, family: "Georgia",
+    spaceBefore: 14, spaceAfter: 4
+  });
+  pdfAppend(body, "三種結果的下一步都是同一件事：讓合適的人知道你有這個東西。", {
+    size: 10.5, color: PDF_INK_SOFT, spaceAfter: 6
+  });
+  pdfAppend(body, "這是絕大部分人真正卡住的地方——不是能力不夠，是從來沒有人知道。先不用想品牌、想課程、想拍片技巧，你要解決的問題只有一個：怎麼讓那些需要的人，知道你做得到這件事。", {
+    size: 10.5, color: PDF_INK_SOFT, spaceAfter: 10
+  });
+
+  // ---- 結尾：零摩擦，唔問觀眾攞任何嘢。痛點已經由 quiz 最後一題收咗，email 亦早喺結果頁收咗 ----
+  pdfBox(body, "七天後",
+    "把這份鑑定留著。七天後打開來看一次，只問自己一句：上面那件事，我做了沒有。");
 
   body.appendHorizontalRule();
   pdfAppend(body, "這張卡只是第一步。夢想人生研究所會陸續推出更多工具，幫你一步步研究出自己的方向。", {
